@@ -29,8 +29,12 @@ void main()
 """
 
 FRAG_DEFAULT = """
-
-
+#version 120
+varying vec2 v_TexCoord;
+uniform sampler2D u_Tex0;
+void main() {
+gl_FragColor = texture2D(u_Tex0, v_TexCoord);
+}
 """
 
 class ShaderWidget(QOpenGLWidget):
@@ -519,8 +523,14 @@ class ShaderEditor(QMainWindow):
 
         self.tab_widget = QTabWidget()
         
+    # Adicione o timer antes de criar o text_edit
+        self.shader_update_timer = QTimer()
+        self.shader_update_timer.setSingleShot(True)
+        self.shader_update_timer.timeout.connect(self.apply_shader)        
+        
         self.text_edit = QTextEdit()
         self.text_edit.setPlainText(FRAG_DEFAULT)
+        self.text_edit.textChanged.connect(self.schedule_shader_update)  # ← Conecte aqui
         self.tab_widget.addTab(self.text_edit, "Editor")
         
 
@@ -572,7 +582,13 @@ class ShaderEditor(QMainWindow):
         
         self.load_shader_files() 
 
-           
+    
+
+    def schedule_shader_update(self):
+        """Agenda a atualização do shader após 500ms sem alterações"""
+        self.shader_update_timer.stop()
+        self.shader_update_timer.start(500) 
+        
     def pickcolor(self):
 
         color = QColorDialog.getColor()
@@ -616,7 +632,7 @@ class ShaderEditor(QMainWindow):
         full_path = os.path.join(os.path.dirname(__file__), asset_path)
         
         if not os.path.exists(full_path):
-            print(f"⚠️ Asset não encontrado: {full_path}")
+            print(f"⚠︝ Asset não encontrado: {full_path}")
             return
         
         self.gl_widget.load_background(full_path)  
@@ -627,14 +643,14 @@ class ShaderEditor(QMainWindow):
         frags_dir = os.path.join(os.path.dirname(__file__), "frags")
         
         if not os.path.exists(frags_dir):
-            print(f"⚠️ Pasta 'frags/' não encontrada em: {frags_dir}")
+            print(f"⚠︝ Pasta 'frags/' não encontrada em: {frags_dir}")
             return
         
 
         shader_files = [f for f in os.listdir(frags_dir) if f.endswith('.frag')]
         
         if not shader_files:
-            print("⚠️ Nenhum arquivo .frag encontrado na pasta frags/")
+            print("⚠︝ Nenhum arquivo .frag encontrado na pasta frags/")
             return
         
         # Adiciona à lista
