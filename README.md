@@ -2,6 +2,9 @@
 Editor básico para manipular e criar items via shader
 
 ```bash
+# Clone o repo
+git clone https://github.com/gilfernandes234/Shader-Editor.git
+
 # Instalar dependências
 Rode o install.bat
 
